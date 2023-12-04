@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import "./index.css";
 import data from "./publications.json";
 import Modal from "./Modal"
@@ -74,7 +74,7 @@ export default function App2() {
             <div className="container_postsPopup">
 
             {currentItems.map((item) => (
-              <div className="modal-container_postsPopup" key={item.cardId}>
+              <div className="modal-container_postsPopup" key={item.id}>
                 <div className="head-post">
                 <div className="title-head-post">
                 <h1 className="titleMainHead">{item.titleMain}</h1>
@@ -83,10 +83,10 @@ export default function App2() {
                 <div className="repost">
                     <p className="date" style={{fontSize: 14 + "px", marginRight: 15 + "px"}}>Поделиться статьей:</p>
                     <div className="repost-icon">
-                      <a href="https://vk.com/share.php?url=http://localhost:3000&text=Врач Гриценко Сергей" target="_blank"><img src="images/vk.png" alt=""/></a>
-                      <a href="https://connect.ok.ru/offer?url=http://localhost:3000&text=Врач Гриценко Сергей"  target="_blank"><img src="images/ok.png" alt="" /></a>
-                      <a href="http://twitter.com/share?http://localhost:3000&text=Врач Гриценко Сергей"  target="_blank"><img src="images/twitter.png" alt="" /></a>
-                      <a href="https://telegram.me/share/url?url=http://localhost:3000&text=Врач Гриценко Сергей"  target="_blank"><img src="images/telegramm.png" alt="" /></a>
+                      <a href="https://vk.com/share.php?url=http://localhost:3000&text=Врач Гриценко Сергей" target="_blank" rel="noreferrer"><img src="images/vk.png" alt=""/></a>
+                      <a href="https://connect.ok.ru/offer?url=http://localhost:3000&text=Врач Гриценко Сергей"  target="_blank" rel="noreferrer"><img src="images/ok.png" alt="" /></a>
+                      <a href="http://twitter.com/share?http://localhost:3000&text=Врач Гриценко Сергей"  target="_blank" rel="noreferrer"><img src="images/twitter.png" alt="" /></a>
+                      <a href="https://telegram.me/share/url?url=http://localhost:3000&text=Врач Гриценко Сергей"  target="_blank" rel="noreferrer"><img src="images/telegramm.png" alt="" /></a>
                     </div>
                   </div>
 

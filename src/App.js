@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import "./index.css";
 import data from "./comments.json";
 
@@ -38,10 +38,11 @@ export default function App() {
 
       <div className="commentsPopup-navigation">
       {currentPage > 1 && (
-      <a href="#" className="commentPagesPrev" onClick={() => paginate(currentPage-1)}>Предыдущая страница</a>
+      <button className="commentPagesPrev" onClick={() => paginate(currentPage-1)}>Предыдущая страница</button>
       )}
       {currentPage === 1 && (
-      <a href="#" className={"commentPagesPrev no_active" ? "commentPagesPrev no_active" : "commentPagesPrev"}>Предыдущая страница</a>
+      <button className={"commentPagesPrev no_active" ? "commentPagesPrev no_active" : "commentPagesPrev"}>Предыдущая страница</button>
+
       )}
         {data.length > itemPerPage && (
           <ul className="pages">
@@ -61,10 +62,10 @@ export default function App() {
           
         )}
       {currentPage < Math.ceil(data.length / itemPerPage) && (
-        <a href="#" className="commentPagesNext" onClick={() => paginate(currentPage+1)}>Следующая страница</a>
+        <button className="commentPagesNext" onClick={() => paginate(currentPage+1)}>Следующая страница</button>
       )}
       {currentPage === Math.ceil(data.length / itemPerPage) && (
-      <a href="#" className={"commentPagesNext no_active" ? "commentPagesNext no_active" : "commentPagesNext"}>Предыдущая страница</a>
+      <button className={"commentPagesNext no_active" ? "commentPagesNext no_active" : "commentPagesNext"}>Следующая страница</button>
       )}
         
 
