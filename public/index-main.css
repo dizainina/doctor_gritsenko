@@ -1261,6 +1261,7 @@ h1{
 .imgComment{
     object-fit: cover;
     width: 100%;
+    height: 100%;
 
 }
 /* -------------------------------------СЕРТИФИКАТЫ------- */
@@ -1489,6 +1490,10 @@ footer{
     height: 746px;
     background-size: cover;
     background-image: url(images/Bg_footer.svg);
+}
+iframe{
+    width: 100%;
+    position:relative;
 }
 .text-white{
     color: white;

@@ -90,19 +90,30 @@ h1{
   color: #000;
   padding-left: 2rem;
   padding-top: 0.9rem;
-  background-position-y: center;
+  background-position-y: 70%;
+  border: none;
+  background-color:rgba(255, 255, 255, 0);
 }
 .commentPagesPrev:hover, .commentPagesNext:hover{
   background-image: url(./images/arrow-left-brown.png);
   background-repeat: no-repeat;
-  background-position-y: center;
+  background-position-y: 70%;
   color: #D5A789;
   opacity: 1;
+  background-color:rgba(255, 255, 255, 0);
+
+
+
 }
 .commentPagesNext{
   background-image: url(./images/arrow-gray-right.png);
   background-position-x:100%;
   padding-right: 2rem;
+  background-color:rgba(255, 255, 255, 0);
+  background-position-y: 70%;
+
+
+
 
 }
 
