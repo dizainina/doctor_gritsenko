@@ -1,6 +1,75 @@
 "use strict";
 
-// прокрутка при клике
+// ==================== УНИВЕРСАЛЬНАЯ СИСТЕМА ПУТЕЙ ====================
+class PathConfig {
+  static getBasePath() {
+    // Для GitHub Pages
+    if (window.location.hostname.includes("github.io")) {
+      const pathParts = window.location.pathname.split("/");
+      return pathParts.length > 1 ? `/${pathParts[1]}` : "";
+    }
+
+    // Для локального development (LiveServer)
+    return "";
+  }
+
+  static getAssetPath(relativePath) {
+    const basePath = this.getBasePath();
+    return `${basePath}/${relativePath}`.replace(/\/\/+/g, "/");
+  }
+}
+
+// ==================== ПЕРЕМЕННЫЕ ДЛЯ ДАННЫХ ====================
+let commentsList = [];
+let postsList = [];
+let postsPopupList = [];
+let certificatesData = [];
+
+// ==================== ЗАГРУЗКА ДАННЫХ ====================
+async function loadJSONData() {
+  try {
+    // Загрузка всех JSON файлов параллельно
+    const [commentsResponse, publicationsResponse, certificatesResponse] =
+      await Promise.all([
+        fetch(PathConfig.getAssetPath("comments.json")),
+        fetch(PathConfig.getAssetPath("publications.json")),
+        fetch(PathConfig.getAssetPath("certificates.json")),
+      ]);
+
+    if (
+      !commentsResponse.ok ||
+      !publicationsResponse.ok ||
+      !certificatesResponse.ok
+    ) {
+      throw new Error("Один или несколько JSON файлов не найдены");
+    }
+
+    const [commentsData, publicationsData, certificatesData] =
+      await Promise.all([
+        commentsResponse.json(),
+        publicationsResponse.json(),
+        certificatesResponse.json(),
+      ]);
+
+    // Инициализация данных
+    commentsList = commentsData;
+    postsList = publicationsData;
+    postsPopupList = publicationsData;
+    window.certificatesData = certificatesData;
+
+    // Запуск рендеринга после загрузки данных
+    renderCommentsList();
+    renderPostsList();
+    initCertificatesSlider();
+  } catch (error) {
+    console.error("Ошибка при загрузке данных:", error);
+  }
+}
+
+// Загружаем данные при загрузке страницы
+window.addEventListener("DOMContentLoaded", loadJSONData);
+
+// ==================== ПРОКРУТКА ПРИ КЛИКЕ ====================
 const menuLinks = document.querySelectorAll("a[data-goto]");
 if (menuLinks.length > 0) {
   menuLinks.forEach((menuLink) => {
@@ -26,15 +95,9 @@ if (menuLinks.length > 0) {
   }
 }
 
-// ************************бургер************************************************
-
-// Get Modal
+// ==================== БУРГЕР МЕНЮ ====================
 var modal = document.getElementById("myModal");
-
-// Get pseudoelement to open Modal
 var btn = document.getElementById("sized");
-
-// Get the <span> element to close Modal
 var span = document.getElementsByClassName("close")[0];
 
 const closeLinks = document.querySelectorAll(".gray");
@@ -48,28 +111,27 @@ if (closeLinks.length > 0) {
     modal.style.display = "none";
   }
 }
-// When user clicks button, open Modal
+
 btn.onclick = function () {
   modal.style.display = "block";
 };
 
-// When user clicks Close (x), close Modal
 span.onclick = function () {
   modal.style.display = "none";
 };
 
-// When user clicks anywhere outside of the Modal, close Modal
 window.onclick = function (event) {
   if (event.target == modal) {
     modal.style.display = "none";
   }
 };
 
-// ************************АНИМАЦИЯ************************************************
+// ==================== АНИМАЦИЯ ====================
 const animItems = document.querySelectorAll("._anim-items");
 
 if (animItems.length > 0) {
   window.addEventListener("scroll", animOnScroll, { passive: true });
+
   function animOnScroll() {
     for (let i = 0; i < animItems.length; i++) {
       const animItem = animItems[i];
@@ -93,18 +155,20 @@ if (animItems.length > 0) {
       }
     }
   }
+
   function offset(el) {
     const rect = el.getBoundingClientRect(),
       scrollLeft = window.pageXOffset || document.documentElement.scrollLeft,
       scrollTop = window.pageYOffset || document.documentElement.scrollTop;
     return { top: rect.top + scrollTop, left: rect.left + scrollLeft };
   }
+
   setTimeout(() => {
     animOnScroll();
   }, 100);
 }
 
-// ************************СЛАЙДЕР НА ГЛАВНОМ ЭКРАНЕ****************************
+// ==================== СЛАЙДЕР НА ГЛАВНОМ ЭКРАНЕ ====================
 const nextButton = document.querySelector(".next");
 const nextMobileButton = document.querySelector(".next_mobile");
 const prevMobileButton = document.querySelector(".previous_mobile");
@@ -115,14 +179,18 @@ showSlides(slideIndex);
 function plusSlide() {
   showSlides((slideIndex += 1));
 }
+
 nextButton.addEventListener("click", plusSlide);
 nextMobileButton.addEventListener("click", plusSlide);
+
 function minusSlide() {
   showSlides((slideIndex -= 1));
 }
+
 function currentSlide(n) {
   showSlides((slideIndex = n));
 }
+
 function showSlides(n) {
   var i;
   if (n > slides.length) {
@@ -139,9 +207,8 @@ function showSlides(n) {
 
 setInterval(plusSlide, 4000);
 
-// ******************ПОП-АП Записаться на консультацию**********************
+// ==================== ПОП-АП ЗАПИСАТЬСЯ НА КОНСУЛЬТАЦИЮ ====================
 let body = document.querySelector("body");
-
 let popupBg = document.querySelector(".popup__bg");
 let popup = document.querySelector(".popup");
 let openPopupButtons = document.querySelectorAll(".open-popup");
@@ -154,10 +221,12 @@ openPopupButtons.forEach((button) => {
     popup.classList.add("active");
   });
 });
+
 closePopupButton.addEventListener("click", () => {
   popupBg.classList.remove("active");
   popup.classList.remove("active");
 });
+
 document.addEventListener("click", (e) => {
   if (e.target === popupBg) {
     popupBg.classList.remove("active");
@@ -165,12 +234,11 @@ document.addEventListener("click", (e) => {
   }
 });
 
-// *************************ПОП-АП Отзывы**********************************
+// ==================== ПОП-АП ОТЗЫВЫ ====================
 let openCommentsPopupBtn = document.querySelectorAll(".openCommentsPopupBtn");
 let closeCommentsPopupBtn = document.querySelector(".closeCommentsPopupBtn");
 let containerCommentsPopup = document.querySelector(".container-commentsPopup");
 let commentsPopup = document.querySelector(".commentsPopup");
-
 let scrollY = 0;
 
 openCommentsPopupBtn.forEach((button) => {
@@ -192,13 +260,10 @@ closeCommentsPopupBtn.addEventListener("click", () => {
   const body = document.body;
   body.style.position = "";
   body.style.top = "";
-
   window.scrollTo(0, scrollY);
 });
 
-// ************************рендер ОТЗЫВЫ*****************
-
-var commentsList = [];
+// ==================== РЕНДЕР ОТЗЫВОВ ====================
 const comments = document.querySelector(".comments");
 
 class Comment {
@@ -211,147 +276,133 @@ class Comment {
 
   renderComment() {
     return `
-                        <li class="comment" id="${this.id}">
-                                <div class="comm">
-                                <p class="text-under-comment">${this.name} <span class="gray">${this.date}</span></p>
-                                <p>${this.message}</p>
-                                </div>
-                        </li>
-                `;
+            <li class="comment" id="${this.id}">
+                <div class="comm">
+                    <p class="text-under-comment">${this.name} <span class="gray">${this.date}</span></p>
+                    <p>${this.message}</p>
+                </div>
+            </li>
+        `;
   }
 }
 
 function renderCommentsList() {
+  if (!commentsList.length) return;
+
+  comments.innerHTML = "";
   commentsList.forEach((comment) => {
     comments.innerHTML += new Comment(
       comment.id,
-      comment.name,
       comment.date,
+      comment.name,
       comment.message
     ).renderComment();
   });
+
+  initCommentsPagination();
 }
 
-async function loadCommentsFromFile() {
-  try {
-    const response = await fetch("./comments.json");
-    const data = await response.json();
-    commentsList = data.map((item) => {
-      return new Comment(item.id, item.name, item.date, item.message);
+function initCommentsPagination() {
+  const listItems = comments.querySelectorAll("li");
+  const paginationNumbers = document.getElementById("pagination-numbers");
+  const nextButtonComments = document.getElementById("next-buttonComments");
+  const prevButtonComments = document.getElementById("prev-buttonComments");
+
+  if (!listItems.length) return;
+
+  const paginationLimit = 4;
+  const pageCount = Math.ceil(listItems.length / paginationLimit);
+  let currentPage = 1;
+
+  const disableButton = (button) => {
+    button.classList.add("disabled");
+    button.setAttribute("disabled", true);
+  };
+
+  const enableButton = (button) => {
+    button.classList.remove("disabled");
+    button.removeAttribute("disabled");
+  };
+
+  const handlePageButtonsStatus = () => {
+    if (currentPage === 1) {
+      disableButton(prevButtonComments);
+    } else {
+      enableButton(prevButtonComments);
+    }
+
+    if (pageCount === currentPage) {
+      disableButton(nextButtonComments);
+    } else {
+      enableButton(nextButtonComments);
+    }
+  };
+
+  const handleActivePageNumber = () => {
+    document.querySelectorAll(".pagination-number").forEach((button) => {
+      button.classList.remove("active");
+      const pageIndex = Number(button.getAttribute("page-index"));
+      if (pageIndex == currentPage) {
+        button.classList.add("active");
+      }
     });
+  };
 
-    renderCommentsList();
-    const listItems = comments.querySelectorAll("li");
-    const paginationNumbers = document.getElementById("pagination-numbers");
+  const appendPageNumber = (index) => {
+    const pageNumber = document.createElement("button");
+    pageNumber.className = "pagination-number";
+    pageNumber.innerHTML = index;
+    pageNumber.setAttribute("page-index", index);
+    pageNumber.setAttribute("aria-label", "Page " + index);
+    paginationNumbers.appendChild(pageNumber);
+  };
 
-    const nextButtonComments = document.getElementById("next-buttonComments");
-    const prevButtonComments = document.getElementById("prev-buttonComments");
+  const getPaginationNumbers = () => {
+    paginationNumbers.innerHTML = "";
+    for (let i = 1; i <= pageCount; i++) {
+      appendPageNumber(i);
+    }
+  };
 
-    const paginationLimit = 4;
-    const pageCount = Math.ceil(listItems.length / paginationLimit);
-    let currentPage = 1;
+  const setCurrentPage = (pageNum) => {
+    currentPage = pageNum;
+    handleActivePageNumber();
+    handlePageButtonsStatus();
 
-    const disableButton = (button) => {
-      button.classList.add("disabled");
-      button.setAttribute("disabled", true);
-    };
+    const prevRange = (pageNum - 1) * paginationLimit;
+    const currRange = pageNum * paginationLimit;
 
-    const enableButton = (button) => {
-      button.classList.remove("disabled");
-      button.removeAttribute("disabled");
-    };
-
-    const handlePageButtonsStatus = () => {
-      if (currentPage === 1) {
-        disableButton(prevButtonComments);
-      } else {
-        enableButton(prevButtonComments);
+    listItems.forEach((item, index) => {
+      item.classList.add("hidden");
+      if (index >= prevRange && index < currRange) {
+        item.classList.remove("hidden");
       }
-
-      if (pageCount === currentPage) {
-        disableButton(nextButtonComments);
-      } else {
-        enableButton(nextButtonComments);
-      }
-    };
-
-    const handleActivePageNumber = () => {
-      document.querySelectorAll(".pagination-number").forEach((button) => {
-        button.classList.remove("active");
-        const pageIndex = Number(button.getAttribute("page-index"));
-        if (pageIndex == currentPage) {
-          button.classList.add("active");
-        }
-      });
-    };
-
-    const appendPageNumber = (index) => {
-      const pageNumber = document.createElement("button");
-      pageNumber.className = "pagination-number";
-      pageNumber.innerHTML = index;
-      pageNumber.setAttribute("page-index", index);
-      pageNumber.setAttribute("aria-label", "Page " + index);
-
-      paginationNumbers.appendChild(pageNumber);
-    };
-
-    const getPaginationNumbers = () => {
-      for (let i = 1; i <= pageCount; i++) {
-        appendPageNumber(i);
-      }
-    };
-
-    const setCurrentPage = (pageNum) => {
-      currentPage = pageNum;
-
-      handleActivePageNumber();
-      handlePageButtonsStatus();
-
-      const prevRange = (pageNum - 1) * paginationLimit;
-      const currRange = pageNum * paginationLimit;
-
-      listItems.forEach((item, index) => {
-        item.classList.add("hidden");
-        if (index >= prevRange && index < currRange) {
-          item.classList.remove("hidden");
-        }
-      });
-    };
-
-    window.addEventListener("load", () => {
-      getPaginationNumbers();
-      setCurrentPage(1);
-
-      prevButtonComments.addEventListener("click", () => {
-        setCurrentPage(currentPage - 1);
-      });
-
-      nextButtonComments.addEventListener("click", () => {
-        setCurrentPage(currentPage + 1);
-      });
-
-      document.querySelectorAll(".pagination-number").forEach((button) => {
-        const pageIndex = Number(button.getAttribute("page-index"));
-
-        if (pageIndex) {
-          button.addEventListener("click", () => {
-            setCurrentPage(pageIndex);
-          });
-        }
-      });
     });
-  } catch (error) {
-    console.error("Ошибка при загрузке данных: ", error);
-  }
+  };
+
+  getPaginationNumbers();
+  setCurrentPage(1);
+
+  prevButtonComments.addEventListener("click", () => {
+    setCurrentPage(currentPage - 1);
+  });
+
+  nextButtonComments.addEventListener("click", () => {
+    setCurrentPage(currentPage + 1);
+  });
+
+  document.querySelectorAll(".pagination-number").forEach((button) => {
+    const pageIndex = Number(button.getAttribute("page-index"));
+    if (pageIndex) {
+      button.addEventListener("click", () => {
+        setCurrentPage(pageIndex);
+      });
+    }
+  });
 }
 
-loadCommentsFromFile();
-
-// ************************рендер ПУБЛИКАЦИИ*****************
-
-var postsList = [];
+// ==================== РЕНДЕР ПУБЛИКАЦИЙ ====================
 const posts = document.querySelector(".posts-card");
-var postsPopupList = [];
 
 class Post {
   constructor(id, titleMain, date, imagePathSmall, title) {
@@ -364,25 +415,24 @@ class Post {
 
   renderPost() {
     return `
-                        <li class="post-item open-btn" id="${this.id}">
-                                <div class="div-for-img-small-post">
-                                        <img class="post-item-img" src="${
-                                          this.imagePathSmall
-                                        }" alt=""/>
-                                </div>
-                                <p class="titleMain">${this.titleMain}</p>
-                                <p class="title">${this.title.slice(
-                                  0,
-                                  100
-                                )}...</p>
-                                <p class="date uppercase">${this.date}</p>
-                                </div>
-                        </li>
-                `;
+            <li class="post-item open-btn" id="${this.id}">
+                <div class="div-for-img-small-post">
+                    <img class="post-item-img" src="${
+                      this.imagePathSmall
+                    }" alt=""/>
+                </div>
+                <p class="titleMain">${this.titleMain}</p>
+                <p class="title">${this.title.slice(0, 100)}...</p>
+                <p class="date uppercase">${this.date}</p>
+            </li>
+        `;
   }
 }
 
 function renderPostsList() {
+  if (!postsList.length) return;
+
+  posts.innerHTML = "";
   postsList.forEach((post) => {
     posts.innerHTML += new Post(
       post.id,
@@ -392,83 +442,32 @@ function renderPostsList() {
       post.title
     ).renderPost();
   });
+
+  initPostsPagination();
 }
 
-async function loadPostsFromFile() {
-  try {
-    const response = await fetch("./publications.json");
-    const data = await response.json();
-    postsList = data.map((item) => {
-      return new Post(
-        item.id,
-        item.titleMain,
-        item.date,
-        item.imagePathSmall,
-        item.title
-      );
-    });
-    postsPopupList = data.map((item) => {
-      return new PostPopup(
-        item.id,
-        item.titleMain,
-        item.date,
-        item.imagePath,
-        item.title,
-        item.message,
-        item.quote
-      );
-    });
+function initPostsPagination() {
+  const listPostItems = posts.querySelectorAll("li");
+  const nextButtonPosts = document.getElementById("next-buttonPosts");
+  var openPostPopupBtn = document.querySelectorAll(".open-btn");
+  let currentPage = 1;
+  var paginationLimit = 3;
 
-    renderPostsList();
-    const listPostItems = posts.querySelectorAll("li");
-    const nextButtonPosts = document.getElementById("next-buttonPosts");
-    var openPostPopupBtn = document.querySelectorAll(".open-btn");
-    let currentPage = 1;
-    var paginationLimit = 3;
-    var itemsForModal;
+  const setCurrentPage = (pageNum) => {
+    currentPage = pageNum;
 
-    const setCurrentPage = (pageNum) => {
-      currentPage = pageNum;
+    const setPaginationLimit = () => {
+      if (document.documentElement.clientWidth >= 1024) {
+        paginationLimit = 3;
+      } else if (
+        document.documentElement.clientWidth > 789 &&
+        document.documentElement.clientWidth < 1024
+      ) {
+        paginationLimit = 2;
+      } else if (document.documentElement.clientWidth < 790) {
+        paginationLimit = 3;
+      }
 
-      const setPaginationLimit = () => {
-        if (document.documentElement.clientWidth >= 1024) {
-          paginationLimit = 3;
-          const prevRange = (pageNum - 1) * paginationLimit;
-          const currRange = pageNum * paginationLimit;
-
-          listPostItems.forEach((item, index) => {
-            item.classList.add("hidden");
-            if (index >= prevRange && index < currRange) {
-              item.classList.remove("hidden");
-            }
-          });
-        } else if (
-          document.documentElement.clientWidth > 789 &&
-          document.documentElement.clientWidth < 1024
-        ) {
-          paginationLimit = 2;
-          const prevRange = (pageNum - 1) * paginationLimit;
-          const currRange = pageNum * paginationLimit;
-
-          listPostItems.forEach((item, index) => {
-            item.classList.add("hidden");
-            if (index >= prevRange && index < currRange) {
-              item.classList.remove("hidden");
-            }
-          });
-        } else if (document.documentElement.clientWidth < 790) {
-          paginationLimit = 3;
-          const prevRange = (pageNum - 1) * paginationLimit;
-          const currRange = pageNum * paginationLimit;
-
-          listPostItems.forEach((item, index) => {
-            item.classList.add("hidden");
-            if (index >= prevRange && index < currRange) {
-              item.classList.remove("hidden");
-            }
-          });
-        }
-      };
       const prevRange = (pageNum - 1) * paginationLimit;
       const currRange = pageNum * paginationLimit;
 
@@ -478,65 +477,59 @@ async function loadPostsFromFile() {
           item.classList.remove("hidden");
         }
       });
-      window.addEventListener("resize", setPaginationLimit);
     };
 
-    window.addEventListener("load", () => {
-      setCurrentPage(1);
+    setPaginationLimit();
+    window.addEventListener("resize", setPaginationLimit);
+  };
 
-      nextButtonPosts.addEventListener("click", () => {
-        if (currentPage < Math.ceil(listPostItems.length / paginationLimit)) {
-          setCurrentPage(currentPage + 1);
-        } else if (
-          currentPage == Math.ceil(listPostItems.length / paginationLimit)
-        ) {
-          setCurrentPage(
-            currentPage -
-              (Math.ceil(listPostItems.length / paginationLimit) - 1)
-          );
-        }
+  setCurrentPage(1);
+
+  nextButtonPosts.addEventListener("click", () => {
+    if (currentPage < Math.ceil(listPostItems.length / paginationLimit)) {
+      setCurrentPage(currentPage + 1);
+    } else if (
+      currentPage == Math.ceil(listPostItems.length / paginationLimit)
+    ) {
+      setCurrentPage(
+        currentPage - (Math.ceil(listPostItems.length / paginationLimit) - 1)
+      );
+    }
+  });
+
+  // Обработчики для попапов публикаций
+  openPostPopupBtn.forEach((button) => {
+    button.addEventListener("click", (e) => {
+      e.preventDefault();
+      containerPostPopup.classList.add("active");
+      postPopupBg.classList.add("active");
+
+      scrollY = window.scrollY;
+      const body = document.body;
+      body.style.position = "fixed";
+      body.style.top = `-${scrollY}px`;
+
+      let postIdOnclick = e.currentTarget.id;
+      const itemsForModal = postsPopupList.filter(
+        (item) => item.id == postIdOnclick
+      );
+
+      itemsForModal.forEach((post) => {
+        containerPostPopup.innerHTML = new PostPopup(
+          post.id,
+          post.titleMain,
+          post.date,
+          post.imagePath,
+          post.title,
+          post.message,
+          post.quote
+        ).renderPostPopup();
       });
     });
-
-    openPostPopupBtn.forEach((button) => {
-      button.addEventListener("click", (e) => {
-        e.preventDefault();
-        containerPostPopup.classList.add("active");
-        postPopupBg.classList.add("active");
-
-        scrollY = window.scrollY;
-        const body = document.body;
-        body.style.position = "fixed";
-        body.style.top = `-${scrollY}px`;
-
-        let postIdOnclick;
-        postIdOnclick = e.currentTarget.id;
-        itemsForModal = postsPopupList.filter(
-          (item) => item.id == postIdOnclick
-        );
-
-        itemsForModal.forEach((postIdOnclick) => {
-          containerPostPopup.innerHTML = new PostPopup(
-            postIdOnclick.id,
-            postIdOnclick.titleMain,
-            postIdOnclick.date,
-            postIdOnclick.imagePath,
-            postIdOnclick.title,
-            postIdOnclick.message,
-            postIdOnclick.quote
-          ).renderPostPopup();
-        });
-      });
-    });
-  } catch (error) {
-    console.error("Ошибка при загрузке данных: ", error);
-  }
+  });
 }
 
-loadPostsFromFile();
-
-// ************************попап ПУБЛИКАЦИЯ*****************
-
+// ==================== ПОПАП ПУБЛИКАЦИЙ ====================
 let closePostPopupBtn = document.querySelector(".closePostsPopupBtn");
 let containerPostPopup = document.querySelector(".container_postsPopup");
 let postPopupBg = document.querySelector(".postsPopup");
@@ -547,7 +540,6 @@ closePostPopupBtn.addEventListener("click", () => {
   const body = document.body;
   body.style.position = "";
   body.style.top = "";
-
   window.scrollTo(0, scrollY);
 });
 
@@ -564,47 +556,123 @@ class PostPopup {
 
   renderPostPopup() {
     return `
-                        <div  id="${this.id}" class="modal-container_postsPopup">
-                                <div class="head-post ">
-                                        <div class="title-head-post ">
-                                                <h1 class="titleMainHead">${this.titleMain}</h1>
-                                                <p class="date uppercase">${this.date}</p>
-                                        </div>
-                                        <div class="repost">
-                                                <p class="date inPopup">Поделиться статьей:</p>
-                                                <div class="repost-icon">
-                                                        <a href="https://vk.com/share.php?url=https://www.dr-gritsenko.com" target="_blank" rel="noreferrer"><img src="/images/vk.png" alt=""/></a>
-                                                        <a href="https://connect.ok.ru/offer?url=https://www.dr-gritsenko.com&title=DR.GRITSENKO&imageUrl=images/mandala.png"  target="_blank" rel="noreferrer"><img src="/images/ok.png" alt="" /></a>
-                                                        <a href="http://twitter.com/share?https://www.dr-gritsenko.com"  target="_blank" rel="noreferrer"><img src="/images/twitter.png" alt="" /></a>
-                                                        <a href="https://telegram.me/share/url?url=https://www.dr-gritsenko.com"  target="_blank" rel="noreferrer"><img src="/images/telegramm.png" alt="" /></a>
-                                                </div>
-                                        </div>
-                                </div>
-                                <div class="head-img">
-                                        <img src="${this.imagePath}" alt=""/>
-                                </div>
-                                <div class="main-post">
-                                        <h2 class="title-main-post">${this.title}</h2>
-                                        <p class="item-message">${this.message}</p>
-                                </div>
-                                <div class="div-for-quote">
-                                        <div class="quote-post">
-                                                <div tyle="border-radius: 50px;">
-                                                        <img class="post-portret" src="/images/post-portret.jpg" tyle="border-radius: 50%;" alt=""/>
-                                                        <p class="margin-top-post"> <b>Сергей Гриценко</b> </p>
-                                                        <p class="vrach-kineziolog">Врач-кинезиолог</p>
-                                                </div>
-                                                <p class="quote">${this.quote}</p>
-                                        </div>
-                                        <img class="img-quotation-marks" src="/images/quotation-marks.png" alt=""/>
-                                        <img class="img-quotation-marks-for-mobile" src="/images/quotation-marks.png" alt=""/>
-                                </div>
+            <div id="${this.id}" class="modal-container_postsPopup">
+                <div class="head-post ">
+                    <div class="title-head-post ">
+                        <h1 class="titleMainHead">${this.titleMain}</h1>
+                        <p class="date uppercase">${this.date}</p>
+                    </div>
+                    <div class="repost">
+                        <p class="date inPopup">Поделиться статьей:</p>
+                        <div class="repost-icon">
+                            <a href="https://vk.com/share.php?url=https://www.dr-gritsenko.com" target="_blank" rel="noreferrer"><img src="${PathConfig.getAssetPath(
+                              "images/vk.png"
+                            )}" alt=""/></a>
+                            <a href="https://connect.ok.ru/offer?url=https://www.dr-gritsenko.com&title=DR.GRITSENKO&imageUrl=images/mandala.png" target="_blank" rel="noreferrer"><img src="${PathConfig.getAssetPath(
+                              "images/ok.png"
+                            )}" alt="" /></a>
+                            <a href="http://twitter.com/share?https://www.dr-gritsenko.com" target="_blank" rel="noreferrer"><img src="${PathConfig.getAssetPath(
+                              "images/twitter.png"
+                            )}" alt="" /></a>
+                            <a href="https://telegram.me/share/url?url=https://www.dr-gritsenko.com" target="_blank" rel="noreferrer"><img src="${PathConfig.getAssetPath(
+                              "images/telegramm.png"
+                            )}" alt="" /></a>
                         </div>
-                `;
+                    </div>
+                </div>
+                <div class="head-img">
+                    <img src="${this.imagePath}" alt=""/>
+                </div>
+                <div class="main-post">
+                    <h2 class="title-main-post">${this.title}</h2>
+                    <p class="item-message">${this.message}</p>
+                </div>
+                <div class="div-for-quote">
+                    <div class="quote-post">
+                        <div tyle="border-radius: 50px;">
+                            <img class="post-portret" src="${PathConfig.getAssetPath(
+                              "images/post-portret.jpg"
+                            )}" tyle="border-radius: 50%;" alt=""/>
+                            <p class="margin-top-post"> <b>Сергей Гриценко</b> </p>
+                            <p class="vrach-kineziolog">Врач-кинезиолог</p>
+                        </div>
+                        <p class="quote">${this.quote}</p>
+                    </div>
+                    <img class="img-quotation-marks" src="${PathConfig.getAssetPath(
+                      "images/quotation-marks.png"
+                    )}" alt=""/>
+                    <img class="img-quotation-marks-for-mobile" src="${PathConfig.getAssetPath(
+                      "images/quotation-marks.png"
+                    )}" alt=""/>
+                </div>
+            </div>
+        `;
   }
 }
 
-// ************************кнопка НАВЕРХ*****************
+// ==================== СЛАЙДЕР СЕРТИФИКАТОВ ====================
+function initCertificatesSlider() {
+  if (!window.certificatesData || !window.certificatesData.certificates) return;
+
+  const swiperWrapper = document.getElementById("swiper-wrapper");
+  swiperWrapper.innerHTML = "";
+
+  window.certificatesData.certificates.forEach((certificate) => {
+    const slide = document.createElement("div");
+    slide.classList.add("swiper-slide");
+    const img = document.createElement("img");
+    img.classList.add("certificate-slide");
+    img.src = certificate.src;
+    img.alt = "";
+    slide.appendChild(img);
+    swiperWrapper.appendChild(slide);
+  });
+
+  // Инициализация Swiper
+  const diplomSlides = new Swiper(".diplom-slides", {
+    navigation: {
+      nextEl: ".swiper-button-next",
+      prevEl: ".swiper-button-prev",
+    },
+    pagination: {
+      el: ".swiper-pagination",
+      type: "bullets",
+      clickable: true,
+      dynamicBullets: true,
+      dynamicMainBullets: 3,
+    },
+    spaceBetween: 50,
+    keyboard: {
+      enabled: true,
+      onlyInViewport: true,
+      pageUpDown: true,
+    },
+    mousewheel: {
+      sensitivity: 1,
+    },
+    autoHeight: true,
+    breakpoints: {
+      480: {
+        slidesPerView: 1,
+        spaceBetween: 0,
+      },
+      780: {
+        slidesPerView: 1.5,
+        spaceBetween: 10,
+      },
+      1098: {
+        slidesPerView: 2,
+        spaceBetween: 20,
+      },
+      1200: {
+        slidesPerView: 4,
+        spaceBetween: 30,
+      },
+    },
+  });
+}
+
+// ==================== КНОПКА НАВЕРХ ====================
 const btnUp = {
   el: document.querySelector(".btn-up"),
   show() {
@@ -621,71 +689,5 @@ const btnUp = {
     this.el.onclick = () => window.scrollTo({ top: 0, behavior: "smooth" });
   },
 };
+
 btnUp.init();
-
-// ************************СЛАЙДЕР СЕРТИФИКАТЫ****************************
-
-fetch("./certificates.json")
-  .then((response) => {
-    if (!response.ok) {
-      throw new Error("Не удалось загрузить JSON");
-    }
-    return response.json();
-  })
-  .then((data) => {
-    const swiperWrapper = document.getElementById("swiper-wrapper");
-    data.certificates.forEach((certificate) => {
-      const slide = document.createElement("div");
-      slide.classList.add("swiper-slide");
-      const img = document.createElement("img");
-      img.classList.add("certificate-slide");
-      img.src = certificate.src;
-      img.alt = "";
-      slide.appendChild(img);
-      swiperWrapper.appendChild(slide);
-    });
-
-    // Инициализация Swiper
-    const diplomSlides = new Swiper(".diplom-slides", {
-      navigation: {
-        nextEl: ".swiper-button-next",
-        prevEl: ".swiper-button-prev",
-      },
-      pagination: {
-        el: ".swiper-pagination",
-        type: "bullets",
-        clickable: true,
-        dynamicBullets: true,
-        dynamicMainBullets: 3,
-      },
-      spaceBetween: 50,
-      keyboard: {
-        enabled: true,
-        onlyInViewport: true,
-        pageUpDown: true,
-      },
-      mousewheel: {
-        sensitivity: 1,
-      },
-      autoHeight: true,
-      breakpoints: {
-        480: {
-          slidesPerView: 1,
-          spaceBetween: 0,
-        },
-        780: {
-          slidesPerView: 1.5,
-          spaceBetween: 10,
-        },
-        1098: {
-          slidesPerView: 2,
-          spaceBetween: 20,
-        },
-        1200: {
-          slidesPerView: 4,
-          spaceBetween: 30,
-        },
-      },
-    });
-  })
-  .catch((error) => console.error("Error loading JSON:", error));
