@@ -234,7 +234,7 @@ function renderCommentsList() {
 
 async function loadCommentsFromFile() {
   try {
-    const response = await fetch("/comments.json");
+    const response = await fetch("./comments.json");
     const data = await response.json();
     commentsList = data.map((item) => {
       return new Comment(item.id, item.name, item.date, item.message);
@@ -396,7 +396,7 @@ function renderPostsList() {
 
 async function loadPostsFromFile() {
   try {
-    const response = await fetch("/publications.json");
+    const response = await fetch("./publications.json");
     const data = await response.json();
     postsList = data.map((item) => {
       return new Post(
@@ -625,7 +625,7 @@ btnUp.init();
 
 // ************************СЛАЙДЕР СЕРТИФИКАТЫ****************************
 
-fetch("/certificates.json")
+fetch("./certificates.json")
   .then((response) => {
     if (!response.ok) {
       throw new Error("Не удалось загрузить JSON");
