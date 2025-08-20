@@ -17,6 +17,16 @@ class PathConfig {
     const basePath = this.getBasePath();
     return `${basePath}/${relativePath}`.replace(/\/\/+/g, "/");
   }
+
+  // Специальный метод для изображений
+  static getImagePath(imageName) {
+    return this.getAssetPath(`images/${imageName}`);
+  }
+
+  // Специальный метод для дипломов/сертификатов
+  static getDiplomaPath(imageName) {
+    return this.getAssetPath(`diplom/${imageName}`);
+  }
 }
 
 // ==================== ПЕРЕМЕННЫЕ ДЛЯ ДАННЫХ ====================
@@ -409,7 +419,7 @@ class Post {
     this.id = id;
     this.titleMain = titleMain;
     this.date = date;
-    this.imagePathSmall = imagePathSmall;
+    this.imagePathSmall = imagePathSmall; // сохраняем оригинальное имя файла
     this.title = title;
   }
 
@@ -417,9 +427,9 @@ class Post {
     return `
             <li class="post-item open-btn" id="${this.id}">
                 <div class="div-for-img-small-post">
-                    <img class="post-item-img" src="${
+                    <img class="post-item-img" src="${PathConfig.getImagePath(
                       this.imagePathSmall
-                    }" alt=""/>
+                    )}" alt=""/>
                 </div>
                 <p class="titleMain">${this.titleMain}</p>
                 <p class="title">${this.title.slice(0, 100)}...</p>
@@ -622,7 +632,7 @@ function initCertificatesSlider() {
     slide.classList.add("swiper-slide");
     const img = document.createElement("img");
     img.classList.add("certificate-slide");
-    img.src = certificate.src;
+    img.src = PathConfig.getDiplomaPath(certificate.src); // Используем универсальный путь
     img.alt = "";
     slide.appendChild(img);
     swiperWrapper.appendChild(slide);

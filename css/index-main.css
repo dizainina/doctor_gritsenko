@@ -1,6 +1,6 @@
 @font-face {
   font-family: "Plain";
-  src: local("Plain"), url("fonts/Plain-Regular.otf") format("otf");
+  src: local("Plain"), url("./fonts/Plain-Regular.otf") format("otf");
 }
 
 * {
